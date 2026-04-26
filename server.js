@@ -6,11 +6,14 @@ const path = require('path');
 const os = require('os');
 const selfsigned = require('selfsigned');
 
+const compression = require('compression');
+
 // Catch all errors so the server never crashes
 process.on('uncaughtException', (err) => console.error('Caught exception:', err));
 process.on('unhandledRejection', (reason) => console.error('Unhandled Rejection:', reason));
 
 const app = express();
+app.use(compression());
 app.use(express.static(path.join(__dirname, 'public')));
 
 console.log('Generating strong SSL certificate for Router Method...');
@@ -51,11 +54,13 @@ app.use((req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html'))
 
 io.on('connection', (socket) => {
     socket.on('gyro-data', (data) => socket.volatile.broadcast.emit('gyro-data', data));
-    
-    // Bidirectional: PC can send a ping to the phone
-    socket.on('ping-phone', () => {
-        socket.broadcast.emit('haptic-ping');
-    });
+    socket.on('q', (data) => socket.volatile.broadcast.emit('q', data));
+
+    socket.on('battery-update', (data) => socket.broadcast.emit('battery-update', data));
+    socket.on('toggle-flashlight', (state) => socket.broadcast.emit('toggle-flashlight', state));
+    socket.on('vibrate', (pattern) => socket.broadcast.emit('vibrate', pattern));
+
+    socket.on('ping', (cb) => { if (typeof cb === 'function') cb(); });
 });
 
 const HTTP_PORT = 3000;

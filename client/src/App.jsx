@@ -1,6 +1,8 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate } from 'react-router-dom';
-import PhoneController from './pages/PhoneController';
-import PCViewer from './pages/PCViewer';
+
+const PhoneController = lazy(() => import('./pages/PhoneController'));
+const PCViewer = lazy(() => import('./pages/PCViewer'));
 
 function Home() {
   const navigate = useNavigate();
@@ -30,12 +32,29 @@ function Home() {
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/phone" element={<PhoneController />} />
-        <Route path="/pc" element={<PCViewer />} />
-      </Routes>
+      <Suspense fallback={<RouteLoading />}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/phone" element={<PhoneController />} />
+          <Route path="/pc" element={<PCViewer />} />
+        </Routes>
+      </Suspense>
     </BrowserRouter>
+  );
+}
+
+function RouteLoading() {
+  return (
+    <div style={{
+      minHeight: '100vh',
+      display: 'grid',
+      placeItems: 'center',
+      background: '#0f172a',
+      color: 'white',
+      fontFamily: 'sans-serif'
+    }}>
+      Loading...
+    </div>
   );
 }
 
